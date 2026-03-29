@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { api } from './api';
 
 type ThemeMode = 'light' | 'dark';
-type PlaceCategory = 'sights' | 'food' | 'parks';
+type PlaceCategory = 'sights' | 'food' | 'active';
 type PlacesTab = 'all' | PlaceCategory;
 
 type PlaceItem = {
@@ -20,42 +21,82 @@ const TABS: { value: PlacesTab; label: string }[] = [
   { value: 'all', label: 'Все' },
   { value: 'sights', label: 'Достопримечательности' },
   { value: 'food', label: 'Кафе и рестораны' },
-  { value: 'parks', label: 'Парки' },
+  { value: 'active', label: 'Активный отдых' },
 ];
 
 const PLACES: PlaceItem[] = [
   {
     id: 1,
     title: 'Золотая обитель Будды Шакьямуни',
-    description: 'Главный хурул Элисты и символ современной Калмыкии.',
-    address: 'ул. Ю. Клыкова, 63',
+    description: 'Главный символ Калмыкии и крупнейший буддийский храм Европы.',
+    address: 'ул. Юрия Клыкова, 63',
     category: 'sights',
-    imageUrl: '/images/elista-temple.jpg',
+    imageUrl: '/images/zoloto.jpg',
   },
   {
     id: 2,
     title: 'Пагода Семи Дней',
-    description: 'Центральная площадь города с узнаваемой архитектурой.',
-    address: 'Площадь Ленина',
+    description: 'Красивое многоярусное сооружение в самом центре Элисты.',
+    address: 'пл. Ленина',
     category: 'sights',
-    imageUrl: '/images/elista-hero.jpg',
+    imageUrl: '/images/pagoda.jpg',
   },
   {
     id: 3,
-    title: 'Калмыцкая кухня',
-    description: 'Местные блюда, чай и национальная атмосфера.',
+    title: 'Катание на лошадях',
+    description: 'Конные клубы, где можно почувствовать дух кочевника.',
     address: 'Центр Элисты',
-    category: 'food',
-    imageUrl: '/images/elista-hero.jpg',
+    category: 'active',
+    imageUrl: '/images/loshad.jpg',
   },
   {
     id: 4,
-    title: 'Городской парк',
-    description: 'Спокойные аллеи и комфортное место для прогулок.',
-    address: 'ул. Ленина',
-    category: 'parks',
-    imageUrl: '/images/elista-temple.jpg',
+    title: 'Одинокий Тополь',
+    description: 'Священное дерево, посаженное буддийским монахом в середине XIX века.',
+    address: 'пос. Хар-Булук (около 20 км от Элисты)',
+    category: 'active',
+    imageUrl: '/images/topol.jpg',
   },
+  {
+	id: 5,
+	title: 'Розовое озеро',
+	description: 'Природное чудо в степях Калмыкии.',
+	address: 'Черноземельский район, пос. Адык (экскурсии стартуют оттуда)',
+	category: 'active',
+	imageUrl: '/images/pink.jpg',
+ },
+ {
+	id: 6,
+	title: 'Горящий источник',
+	description: 'Артезианская скважина, воду в которой можно буквально поджечь из-за выходящего метана.',
+	address: 'Черноземельский район (обычно посещается в рамках тура на Розовое озеро)',
+	category: 'active',
+	imageUrl: '/images/fire.jpg',
+ },
+ {
+	id: 7,
+	title: 'Ресторан «Уралан»',
+	description: 'Современный ресторан национальной кухни.',
+	address: 'ул. Номто Очирова, 9',
+	category: 'food',
+	imageUrl: '/images/uralan.jpg',
+ },
+ {
+	id: 8,
+	title: 'Желтая чебуречная «Смак»',
+	description: 'Культовое гастрономическое место города.',
+	address: 'ул. Пушкина, 7',
+	category: 'food',
+	imageUrl: '/images/cheburek.jpg',
+ },
+ {
+	id: 9,
+	title: 'Картинг',
+	description: 'Профессиональная трасса для картинга, где можно устроить скоростной заезд с друзьями и получить заряд адреналина.',
+	address: 'ул. Пюрбеева, 32',
+	category: 'active',
+	imageUrl: '/images/car.jpg',
+ },
 ];
 
 function Navbar({
@@ -127,7 +168,7 @@ function Navbar({
   );
 }
 
-function HomePage({
+function SiteFooter({
   contact,
   setContact,
   submitContact,
@@ -141,6 +182,145 @@ function HomePage({
   sending: boolean;
   contactInfo: string;
   contactError: string;
+}) {
+  const iconProps = { size: 18, className: 'site-footer-icon', strokeWidth: 2, 'aria-hidden': true as const };
+
+  return (
+    <footer className="site-footer site-footer-expanded" id="contact">
+      <div className="site-footer-inner site-footer-stack">
+        <div className="site-footer-col site-footer-form-col">
+          <h3 className="site-footer-heading site-footer-heading-form">Обратная связь</h3>
+          <p className="site-footer-form-lead muted">
+            Вопросы по маршрутам или сайту — напишите, ответим на указанный email.
+          </p>
+          <div className="card contact-card site-footer-contact-card">
+            <form className="form form--footer-row" onSubmit={submitContact}>
+              <label>
+                Имя
+                <input
+                  value={contact.name}
+                  onChange={(event) => setContact((prev) => ({ ...prev, name: event.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                Email
+                <input
+                  type="email"
+                  value={contact.email}
+                  onChange={(event) => setContact((prev) => ({ ...prev, email: event.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                Сообщение
+                <textarea
+                  value={contact.message}
+                  onChange={(event) => setContact((prev) => ({ ...prev, message: event.target.value }))}
+                  required
+                />
+              </label>
+              <button type="submit" disabled={sending}>
+                {sending ? 'Отправка...' : 'Отправить'}
+              </button>
+              {contactInfo && <p className="success">{contactInfo}</p>}
+              {contactError && <p className="error">{contactError}</p>}
+            </form>
+          </div>
+        </div>
+
+        <div className="site-footer-top-row">
+          <div className="site-footer-col site-footer-about">
+            <Link to="/" className="site-footer-brand-link">
+              <img src="/images/elista-logo.svg" alt="Kalmbuddha" className="site-footer-logo" />
+            </Link>
+            <p className="site-footer-brand-title">Kalmbuddha</p>
+            <p className="site-footer-about-text">
+              Степи, буддийское наследие и гостеприимство Калмыкии — в одном путеводителе по Элисте и окрестностям.
+            </p>
+            <p className="site-footer-copyright muted">© 2026 Kalmbuddha. Учебный проект.</p>
+          </div>
+
+          <div className="site-footer-col site-footer-contact-block">
+            <h3 className="site-footer-heading">Контакты и ссылки</h3>
+            <div className="site-footer-contact-inline">
+              <ul className="site-footer-contact-list">
+                <li>
+                  <MapPin {...iconProps} />
+                  <span>358000, Республика Калмыкия, г. Элиста, ул. Имени О. И. Городовикова, д. 8</span>
+                </li>
+                <li>
+                  <Phone {...iconProps} />
+                  <a href="tel:+78472234567">+7 (84722) 34-56-7</a>
+                </li>
+                <li>
+                  <Mail {...iconProps} />
+                  <a href="mailto:hello@kalmbuddha.local">hello@kalmbuddha.local</a>
+                </li>
+              </ul>
+              <nav className="site-footer-quick-nav site-footer-quick-nav--inline" aria-label="Быстрые ссылки">
+                <Link to="/">Главная</Link>
+                <Link to="/places">Места</Link>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function PlaceCatalogCard({
+  place,
+  setSelectedPlace,
+}: {
+  place: PlaceItem;
+  setSelectedPlace: React.Dispatch<React.SetStateAction<PlaceItem | null>>;
+}) {
+  const badgeLabel = TABS.find((item) => item.value === place.category)?.label ?? '';
+  return (
+    <div
+      className="card place-card"
+      onClick={() => setSelectedPlace(place)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setSelectedPlace(place);
+        }
+      }}
+    >
+      <div className="place-card-photo-wrap">
+        <img className="card-photo" src={place.imageUrl} alt={place.title} />
+      </div>
+      <div className="card-content">
+        <div className="card-title-row">
+          <h3>{place.title}</h3>
+          <span className="place-badge">{badgeLabel}</span>
+        </div>
+        <p className="card-desc">{place.description}</p>
+      </div>
+      <div className="card-actions">
+        <button
+          type="button"
+          className="primary-btn"
+          onClick={(event) => {
+            event.stopPropagation();
+            setSelectedPlace(place);
+          }}
+        >
+          Открыть
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HomePage({
+  setSelectedPlace,
+}: {
+  setSelectedPlace: React.Dispatch<React.SetStateAction<PlaceItem | null>>;
 }) {
   return (
     <div className="page">
@@ -199,53 +379,22 @@ function HomePage({
           </div>
         </section>
 
-        <section className="section">
-          <h2 className="section-title">Каталог мест</h2>
-          <p className="section-subtitle">
-            Вся подборка мест находится на отдельной странице, чтобы главная оставалась презентационной.
+        <section className="section home-places-section" id="preview-places" aria-labelledby="preview-places-heading">
+          <h2 className="section-title" id="preview-places-heading">
+            Популярные места
+          </h2>
+          <p className="section-subtitle home-places-lead">
+            Три яркие точки из подборки — остальное с фильтрами и вкладками на странице «Места».
           </p>
-          <div>
-            <Link to="/places" className="nav-mobile-pill">
-              Перейти к местам
-            </Link>
+          <div className="grid places-catalog-grid home-places-preview-grid">
+            {PLACES.slice(0, 3).map((place) => (
+              <PlaceCatalogCard key={place.id} place={place} setSelectedPlace={setSelectedPlace} />
+            ))}
           </div>
-        </section>
-
-        <section id="contact" className="section">
-          <h2 className="section-title">Форма обращения</h2>
-          <div className="card contact-card">
-            <form className="form" onSubmit={submitContact}>
-              <label>
-                Имя
-                <input
-                  value={contact.name}
-                  onChange={(event) => setContact((prev) => ({ ...prev, name: event.target.value }))}
-                  required
-                />
-              </label>
-              <label>
-                Email
-                <input
-                  type="email"
-                  value={contact.email}
-                  onChange={(event) => setContact((prev) => ({ ...prev, email: event.target.value }))}
-                  required
-                />
-              </label>
-              <label>
-                Сообщение
-                <textarea
-                  value={contact.message}
-                  onChange={(event) => setContact((prev) => ({ ...prev, message: event.target.value }))}
-                  required
-                />
-              </label>
-              <button type="submit" disabled={sending}>
-                {sending ? 'Отправка...' : 'Отправить'}
-              </button>
-              {contactInfo && <p className="success">{contactInfo}</p>}
-              {contactError && <p className="error">{contactError}</p>}
-            </form>
+          <div className="home-places-cta-wrap">
+            <Link to="/places" className="home-places-cta">
+              Смотреть все места
+            </Link>
           </div>
         </section>
       </div>
@@ -284,43 +433,9 @@ function PlacesPage({
               </button>
             ))}
           </div>
-          <div className="grid">
+          <div className="grid places-catalog-grid">
             {places.map((place) => (
-              <div
-                key={place.id}
-                className="card place-card"
-                onClick={() => setSelectedPlace(place)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    setSelectedPlace(place);
-                  }
-                }}
-              >
-                <div className="place-card-photo-wrap">
-                  <img className="card-photo" src={place.imageUrl} alt={place.title} />
-                </div>
-                <div className="card-content">
-                  <div className="card-title-row">
-                    <h3>{place.title}</h3>
-                    <span className="place-badge">{TABS.find((item) => item.value === place.category)?.label}</span>
-                  </div>
-                  <p className="card-desc">{place.description}</p>
-                </div>
-                <div className="card-actions">
-                  <button
-                    className="primary-btn"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setSelectedPlace(place);
-                    }}
-                  >
-                    Открыть
-                  </button>
-                </div>
-              </div>
+              <PlaceCatalogCard key={place.id} place={place} setSelectedPlace={setSelectedPlace} />
             ))}
           </div>
         </section>
@@ -412,14 +527,7 @@ export default function App() {
           <Route
             path="/"
             element={
-              <HomePage
-                contact={contact}
-                setContact={setContact}
-                submitContact={submitContact}
-                sending={sending}
-                contactInfo={contactInfo}
-                contactError={contactError}
-              />
+              <HomePage setSelectedPlace={setSelectedPlace} />
             }
           />
           <Route
@@ -435,12 +543,14 @@ export default function App() {
           />
         </Routes>
       </main>
-      <footer className="site-footer">
-        <div className="site-footer-inner">
-          <p>Kalmbuddha - путеводитель по Элисте</p>
-          <p className="muted">© {new Date().getFullYear()} Все права защищены</p>
-        </div>
-      </footer>
+      <SiteFooter
+        contact={contact}
+        setContact={setContact}
+        submitContact={submitContact}
+        sending={sending}
+        contactInfo={contactInfo}
+        contactError={contactError}
+      />
 
       {selectedPlace && (
         <div className="modal-overlay" onClick={() => setSelectedPlace(null)}>
