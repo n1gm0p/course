@@ -1,0 +1,15 @@
+{
+  "name": "kalmbuddha",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "dev": "powershell -NoProfile -Command \"Start-Process powershell -ArgumentList '-NoProfile','-Command','npm --prefix server run dev'; npm --prefix client run dev\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

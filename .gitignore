@@ -1,0 +1,22 @@
+# Секреты и переменные окружения (никогда не коммитить)
+.env
+.env.local
+.env.*.local
+server/.env
+*.pem
+
+# Логи и кэш
+logs
+*.log
+npm-debug.log*
+.DS_Store
+
+# Зависимости и сборка
+node_modules
+client/dist
+server/uploads
+
+# Локальная SQLite (данные пользователей)
+server/database.db
+server/database.db-wal
+server/database.db-shm
