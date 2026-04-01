@@ -110,7 +110,7 @@ app.post('/api/contact', formLimiter, (req, res) => {
       message: 'Спасибо, ваше сообщение отправлено!',
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
+
     console.error('[contact] DB error', err);
     return res.status(500).json({ message: 'Не удалось сохранить обращение. Попробуйте позже.' });
   }

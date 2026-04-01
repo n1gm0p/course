@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Heart, Mail, MapPin, Phone } from 'lucide-react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { api } from './api';
 
 type ThemeMode = 'light' | 'dark';
 type PlaceCategory = 'sights' | 'food' | 'active';
-type PlacesTab = 'all' | PlaceCategory;
+type PlacesTab = 'all' | PlaceCategory | 'favorites';
 
 type PlaceItem = {
   id: number;
@@ -22,7 +22,22 @@ const TABS: { value: PlacesTab; label: string }[] = [
   { value: 'sights', label: 'Достопримечательности' },
   { value: 'food', label: 'Кафе и рестораны' },
   { value: 'active', label: 'Активный отдых' },
+  { value: 'favorites', label: 'Избранное' },
 ];
+
+function readFavoritesFromStorage(): number[] {
+  try {
+    const raw = localStorage.getItem('kb_favorites');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed) && parsed.every((x) => typeof x === 'number')) {
+      return parsed;
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
 
 const PLACES: PlaceItem[] = [
   {
@@ -273,9 +288,13 @@ function SiteFooter({
 function PlaceCatalogCard({
   place,
   setSelectedPlace,
+  isFavorite,
+  onToggleFavorite,
 }: {
   place: PlaceItem;
   setSelectedPlace: React.Dispatch<React.SetStateAction<PlaceItem | null>>;
+  isFavorite: boolean;
+  onToggleFavorite: (id: number) => void;
 }) {
   const badgeLabel = TABS.find((item) => item.value === place.category)?.label ?? '';
   return (
@@ -292,6 +311,18 @@ function PlaceCatalogCard({
       }}
     >
       <div className="place-card-photo-wrap">
+        <button
+          type="button"
+          className={`place-card-favorite${isFavorite ? ' place-card-favorite--active' : ''}`}
+          aria-label={isFavorite ? 'Убрать из избранного' : 'В избранное'}
+          aria-pressed={isFavorite}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleFavorite(place.id);
+          }}
+        >
+          <Heart size={18} strokeWidth={2} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
         <img className="card-photo" src={place.imageUrl} alt={place.title} />
       </div>
       <div className="card-content">
@@ -319,8 +350,12 @@ function PlaceCatalogCard({
 
 function HomePage({
   setSelectedPlace,
+  favorites,
+  onToggleFavorite,
 }: {
   setSelectedPlace: React.Dispatch<React.SetStateAction<PlaceItem | null>>;
+  favorites: number[];
+  onToggleFavorite: (id: number) => void;
 }) {
   return (
     <div className="page">
@@ -388,7 +423,13 @@ function HomePage({
           </p>
           <div className="grid places-catalog-grid home-places-preview-grid">
             {PLACES.slice(0, 3).map((place) => (
-              <PlaceCatalogCard key={place.id} place={place} setSelectedPlace={setSelectedPlace} />
+              <PlaceCatalogCard
+                key={place.id}
+                place={place}
+                setSelectedPlace={setSelectedPlace}
+                isFavorite={favorites.includes(place.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
             ))}
           </div>
           <div className="home-places-cta-wrap">
@@ -407,11 +448,15 @@ function PlacesPage({
   setActiveTab,
   places,
   setSelectedPlace,
+  favorites,
+  onToggleFavorite,
 }: {
   activeTab: PlacesTab;
   setActiveTab: React.Dispatch<React.SetStateAction<PlacesTab>>;
   places: PlaceItem[];
   setSelectedPlace: React.Dispatch<React.SetStateAction<PlaceItem | null>>;
+  favorites: number[];
+  onToggleFavorite: (id: number) => void;
 }) {
   return (
     <div className="page">
@@ -433,11 +478,21 @@ function PlacesPage({
               </button>
             ))}
           </div>
-          <div className="grid places-catalog-grid">
-            {places.map((place) => (
-              <PlaceCatalogCard key={place.id} place={place} setSelectedPlace={setSelectedPlace} />
-            ))}
-          </div>
+          {activeTab === 'favorites' && places.length === 0 ? (
+            <p className="places-favorites-empty muted">Вы еще ничего не добавили в избранное</p>
+          ) : (
+            <div className="grid places-catalog-grid">
+              {places.map((place) => (
+                <PlaceCatalogCard
+                  key={place.id}
+                  place={place}
+                  setSelectedPlace={setSelectedPlace}
+                  isFavorite={favorites.includes(place.id)}
+                  onToggleFavorite={onToggleFavorite}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>
@@ -456,6 +511,8 @@ export default function App() {
     return prefersDark ? 'dark' : 'light';
   });
   const [activeTab, setActiveTab] = useState<PlacesTab>('all');
+  /** Чтение из localStorage в инициализаторе — иначе первый save из useEffect затирает данные до hydrate */
+  const [favorites, setFavorites] = useState<number[]>(readFavoritesFromStorage);
   const [selectedPlace, setSelectedPlace] = useState<PlaceItem | null>(null);
   const [contact, setContact] = useState({ name: '', email: '', message: '' });
   const [sending, setSending] = useState(false);
@@ -480,10 +537,23 @@ export default function App() {
     localStorage.setItem('kb_theme', theme);
   }, [theme]);
 
-  const places = useMemo(
-    () => (activeTab === 'all' ? PLACES : PLACES.filter((place) => place.category === activeTab)),
-    [activeTab],
-  );
+  useEffect(() => {
+    localStorage.setItem('kb_favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  function toggleFavorite(id: number) {
+    setFavorites((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  const places = useMemo(() => {
+    if (activeTab === 'favorites') {
+      return PLACES.filter((place) => favorites.includes(place.id));
+    }
+    if (activeTab === 'all') {
+      return PLACES;
+    }
+    return PLACES.filter((place) => place.category === activeTab);
+  }, [activeTab, favorites]);
 
   async function submitContact(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -527,7 +597,11 @@ export default function App() {
           <Route
             path="/"
             element={
-              <HomePage setSelectedPlace={setSelectedPlace} />
+              <HomePage
+                setSelectedPlace={setSelectedPlace}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+              />
             }
           />
           <Route
@@ -538,6 +612,8 @@ export default function App() {
                 setActiveTab={setActiveTab}
                 places={places}
                 setSelectedPlace={setSelectedPlace}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
               />
             }
           />
