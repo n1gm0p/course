@@ -206,7 +206,7 @@ function SiteFooter({
         <div className="site-footer-col site-footer-form-col">
           <h3 className="site-footer-heading site-footer-heading-form">Обратная связь</h3>
           <p className="site-footer-form-lead muted">
-            Вопросы по маршрутам или сайту — напишите, ответим на указанный email.
+            Вопросы по маршрутам или сайту - напишите, ответим на указанный email.
           </p>
           <div className="card contact-card site-footer-contact-card">
             <form className="form form--footer-row" onSubmit={submitContact}>
@@ -251,7 +251,7 @@ function SiteFooter({
             </Link>
             <p className="site-footer-brand-title">Kalmbuddha</p>
             <p className="site-footer-about-text">
-              Степи, буддийское наследие и гостеприимство Калмыкии — в одном путеводителе по Элисте и окрестностям.
+              Степи, буддийское наследие и гостеприимство Калмыкии - в одном путеводителе по Элисте и окрестностям.
             </p>
             <p className="site-footer-copyright muted">© 2026 Kalmbuddha. Учебный проект.</p>
           </div>
@@ -419,7 +419,7 @@ function HomePage({
             Популярные места
           </h2>
           <p className="section-subtitle home-places-lead">
-            Три яркие точки из подборки — остальное с фильтрами и вкладками на странице «Места».
+            Три яркие точки из подборки - остальное с фильтрами и вкладками на странице «Места».
           </p>
           <div className="grid places-catalog-grid home-places-preview-grid">
             {PLACES.slice(0, 3).map((place) => (
