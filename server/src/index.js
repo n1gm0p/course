@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
+const path = require('path');
 
 dotenv.config();
 
@@ -116,6 +117,13 @@ app.post('/api/contact', formLimiter, (req, res) => {
   }
 });
 
+
+// Раздача файлов сайта (React)
+app.use(express.static(path.join(__dirname, '../dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API listening on http://localhost:${PORT}`);

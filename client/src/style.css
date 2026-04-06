@@ -21,9 +21,10 @@
   --primary-2: #b45309; /* deeper saffron */
   --accent: #7c2d12; /* maroon (temple wood) */
   --ring: rgba(245, 158, 11, 0.25);
+  /* для внутренних скроллов (уведомления и т.п.) — нейтральные, без «оранжевого» как у страницы */
   --scroll-track: color-mix(in srgb, var(--surface-strong) 92%, transparent);
-  --scroll-thumb: color-mix(in srgb, var(--primary) 45%, var(--border));
-  --scroll-thumb-hover: color-mix(in srgb, var(--primary) 60%, var(--border));
+  --scroll-thumb: color-mix(in srgb, var(--text) 22%, var(--border));
+  --scroll-thumb-hover: color-mix(in srgb, var(--text) 32%, var(--border));
 
   --shadow: 0 18px 35px rgba(2, 6, 23, 0.1);
 }
@@ -43,8 +44,8 @@ html[data-theme="dark"] {
   --accent: #fb7185; /* subtle accent */
   --ring: rgba(251, 191, 36, 0.22);
   --scroll-track: color-mix(in srgb, var(--surface-strong) 86%, transparent);
-  --scroll-thumb: color-mix(in srgb, var(--primary) 55%, var(--border));
-  --scroll-thumb-hover: color-mix(in srgb, var(--primary) 72%, var(--border));
+  --scroll-thumb: color-mix(in srgb, var(--muted) 40%, var(--border));
+  --scroll-thumb-hover: color-mix(in srgb, var(--muted) 55%, var(--border));
 
   --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
@@ -59,31 +60,7 @@ body {
   background: var(--bg);
 }
 
-html,
-body {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
-}
-
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-*::-webkit-scrollbar-track {
-  background: var(--scroll-track);
-  border-radius: 9999px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: var(--scroll-thumb);
-  border-radius: 9999px;
-  border: 2px solid var(--scroll-track);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: var(--scroll-thumb-hover);
-}
+/* Скролл страницы — стандартный вид браузера (без кастомного «оранжевого» ползунка) */
 
 /* Home page (full-screen hero) */
 body.home #app {
@@ -409,8 +386,7 @@ a {
   overflow: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--primary) 45%, var(--border))
-    var(--scroll-track);
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
 }
 
 .notif-dropdown .notif-list::-webkit-scrollbar {
@@ -423,13 +399,13 @@ a {
 }
 
 .notif-dropdown .notif-list::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: var(--scroll-thumb);
   border-radius: 9999px;
   border: 2px solid var(--scroll-track);
 }
 
 .notif-dropdown .notif-list::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--primary) 58%, var(--border));
+  background: var(--scroll-thumb-hover);
 }
 
 .notif-item {
@@ -3603,6 +3579,7 @@ html[data-theme="dark"] .profile-emoji-icon {
 .confirm-modal::-webkit-scrollbar-track,
 .admin-reject-modal::-webkit-scrollbar-track,
 .notif-list::-webkit-scrollbar-track {
+  background: var(--scroll-track);
   border-radius: 9999px;
 }
 
@@ -3611,8 +3588,17 @@ html[data-theme="dark"] .profile-emoji-icon {
 .confirm-modal::-webkit-scrollbar-thumb,
 .admin-reject-modal::-webkit-scrollbar-thumb,
 .notif-list::-webkit-scrollbar-thumb {
-  border-width: 1px;
+  border: 1px solid var(--scroll-track);
   border-radius: 9999px;
+  background: var(--scroll-thumb);
+}
+
+.modal-scroll-wrap::-webkit-scrollbar-thumb:hover,
+.profile-settings-modal-scroll::-webkit-scrollbar-thumb:hover,
+.confirm-modal::-webkit-scrollbar-thumb:hover,
+.admin-reject-modal::-webkit-scrollbar-thumb:hover,
+.notif-list::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
 }
 
 .profile-theme-swatch {

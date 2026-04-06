@@ -533,6 +533,10 @@ export default function App() {
   }, [location.pathname]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('kb_theme', theme);
   }, [theme]);
